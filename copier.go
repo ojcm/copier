@@ -80,7 +80,7 @@ func CopyFields(toValue interface{}, fromValue interface{}, fields []string) (er
 					if toField := dest.FieldByName(name); toField.IsValid() {
 						if toField.CanSet() {
 							if !set(toField, fromField) {
-								if err := CopyFields(toField.Addr().Interface(), fromField.Interface(), []string{}]); err != nil {
+								if err := CopyFields(toField.Addr().Interface(), fromField.Interface(), []string{}); err != nil {
 									return err
 								}
 							}
