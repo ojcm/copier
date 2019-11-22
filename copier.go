@@ -65,6 +65,13 @@ func CopyFields(toValue interface{}, fromValue interface{}, fields []string) (er
 		// check source
 		if source.IsValid() {
 			//fmt.Printf("%#v", fromTypeFields)
+
+			if len(fields) == 0 {
+				for _, field := range deepFields(toType) {
+					fields = append(fields, field.Name)
+				}
+			}
+
 			// Copy from field to field or method
 			for _, name := range fields {
 
@@ -73,7 +80,7 @@ func CopyFields(toValue interface{}, fromValue interface{}, fields []string) (er
 					if toField := dest.FieldByName(name); toField.IsValid() {
 						if toField.CanSet() {
 							if !set(toField, fromField) {
-								if err := CopyFields(toField.Addr().Interface(), fromField.Interface(), fields); err != nil {
+								if err := CopyFields(toField.Addr().Interface(), fromField.Interface(), []string{}]); err != nil {
 									return err
 								}
 							}
@@ -96,6 +103,7 @@ func CopyFields(toValue interface{}, fromValue interface{}, fields []string) (er
 
 			// Copy from method to field
 			for _, name := range fields {
+
 				var fromMethod reflect.Value
 				if source.CanAddr() {
 					fromMethod = source.Addr().MethodByName(name)
@@ -122,6 +130,23 @@ func CopyFields(toValue interface{}, fromValue interface{}, fields []string) (er
 		}
 	}
 	return
+}
+
+func deepFields(reflectType reflect.Type) []reflect.StructField {
+	var fields []reflect.StructField
+
+	if reflectType = indirectType(reflectType); reflectType.Kind() == reflect.Struct {
+		for i := 0; i < reflectType.NumField(); i++ {
+			v := reflectType.Field(i)
+			if v.Anonymous {
+				fields = append(fields, deepFields(v.Type)...)
+			} else {
+				fields = append(fields, v)
+			}
+		}
+	}
+
+	return fields
 }
 
 func indirect(reflectValue reflect.Value) reflect.Value {
